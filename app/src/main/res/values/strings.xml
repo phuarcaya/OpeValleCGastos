@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">CGastos</string>
     <string name="urlWebApp">http://controlgastos.op-valle.pe</string>
+    <string name="urlPathPDF">controlgastos.op-valle.pe/Archivos/ticket</string>
 </resources>

@@ -46,9 +46,9 @@ public class MainActivity extends AppCompatActivity {
     private final static int file_req_code = 1;
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent intent){
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
-        if(Build.VERSION.SDK_INT >= 21){
+        if (Build.VERSION.SDK_INT >= 21) {
             Uri[] results = null;
 
             /*-- if file request cancelled; exited camera. we need to send null value to make future attempts workable --*/
@@ -58,8 +58,8 @@ public class MainActivity extends AppCompatActivity {
             }
 
             /*-- continue if response is positive --*/
-            if(resultCode== Activity.RESULT_OK){
-                if(null == file_path){
+            if (resultCode == Activity.RESULT_OK) {
+                if (null == file_path) {
                     return;
                 }
                 ClipData clipData;
@@ -68,13 +68,13 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     clipData = intent.getClipData();
                     stringData = intent.getDataString();
-                }catch (Exception e){
+                } catch (Exception e) {
                     clipData = null;
                     stringData = null;
                 }
                 if (clipData == null && stringData == null && cam_file_data != null) {
                     results = new Uri[]{Uri.parse(cam_file_data)};
-                }else{
+                } else {
                     if (clipData != null) {
                         final int numSelectedFiles = clipData.getItemCount();
                         results = new Uri[numSelectedFiles];
@@ -87,7 +87,8 @@ public class MainActivity extends AppCompatActivity {
                             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
                             cam_photo.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
                             stringData = MediaStore.Images.Media.insertImage(this.getContentResolver(), cam_photo, null, null);
-                        }catch (Exception ignored){}
+                        } catch (Exception ignored) {
+                        }
 
                         results = new Uri[]{Uri.parse(stringData)};
                     }
@@ -96,9 +97,9 @@ public class MainActivity extends AppCompatActivity {
 
             file_path.onReceiveValue(results);
             file_path = null;
-        }else{
-            if(requestCode == file_req_code){
-                if(null == file_data) return;
+        } else {
+            if (requestCode == file_req_code) {
+                if (null == file_data) return;
                 Uri result = intent == null || resultCode != RESULT_OK ? null : intent.getData();
                 file_data.onReceiveValue(result);
                 file_data = null;
@@ -125,15 +126,18 @@ public class MainActivity extends AppCompatActivity {
             webView.setOverScrollMode(WebView.OVER_SCROLL_NEVER);
             webView.clearHistory();
 
+//            String pdf = "https://tistoragedatalake.blob.core.windows.net/aldisenosee/20523146158-01-F001-144.pdf";
+//            webView.loadUrl("https://drive.google.com/viewerng/viewer?embedded=true&url=" + pdf);
+
             webView.loadUrl(urlWebApp);
             webView.setWebViewClient(new WebViewClient());
             webView.setWebChromeClient(new WebChromeClient());
-            webView.setWebChromeClient(new WebChromeClient(){
+            webView.setWebChromeClient(new WebChromeClient() {
 
                 /*-- handling input[type="file"] requests for android API 21+ --*/
                 public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
 
-                    if(file_permission() && Build.VERSION.SDK_INT >= 21) {
+                    if (file_permission() && Build.VERSION.SDK_INT >= 21) {
                         file_path = filePathCallback;
                         Intent takePictureIntent = null;
                         Intent takeVideoIntent = null;
@@ -236,22 +240,25 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            /*webView.setWebViewClient(new WebViewClient() {
+            webView.setWebViewClient(new WebViewClient() {
                 @Override
                 public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                    *//*if (url != null) {
-                        //Log.e("url",url);
-                        if (url.contains("whatsapp://") || url.contains("wa.me")) {
-                            view.getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                    if (url != null) {
+                        //Log.e("urlaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", url);
+
+                        String urlPathPDF = getResources().getString(R.string.urlPathPDF);
+                        if (url.contains(urlPathPDF)) {
+                            Intent intent = new Intent(MainActivity.this, ViewPDFActivity.class);
+                            //String pdf = "https://tistoragedatalake.blob.core.windows.net/aldisenosee/20523146158-01-F001-144.pdf";
+                            intent.putExtra("urlPDF", url);
+                            startActivity(intent);
                         } else {
                             webView.loadUrl(url);
                         }
-                        return true;
                     } else {
                         return false;
-                    }*//*
+                    }
 
-                    view.loadUrl(url);
                     return true;
                 }
 
@@ -265,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "Error: " + description, Toast.LENGTH_SHORT).show();
                 }
 
-            });*/
+            });
 
         } else {
             Toast.makeText(MainActivity.this, "Error de red!. Por favor, revise su conexión a internet y vuelva a ingresar.", Toast.LENGTH_SHORT).show();
@@ -280,31 +287,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig){
+    public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
     }
 
-    public boolean file_permission(){
-        if(Build.VERSION.SDK_INT >=23 && (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)) {
+    public boolean file_permission() {
+        if (Build.VERSION.SDK_INT >= 23 && (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)) {
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA}, 1);
             return false;
-        }else{
+        } else {
             return true;
         }
     }
 
-    private File create_image() throws IOException{
+    private File create_image() throws IOException {
         @SuppressLint("SimpleDateFormat") String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "img_"+timeStamp+"_";
+        String imageFileName = "img_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        return File.createTempFile(imageFileName,".jpg",storageDir);
+        return File.createTempFile(imageFileName, ".jpg", storageDir);
     }
 
     private File create_video() throws IOException {
         @SuppressLint("SimpleDateFormat")
-        String file_name    = new SimpleDateFormat("yyyy_mm_ss").format(new Date());
-        String new_name     = "file_"+file_name+"_";
-        File sd_directory   = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        String file_name = new SimpleDateFormat("yyyy_mm_ss").format(new Date());
+        String new_name = "file_" + file_name + "_";
+        File sd_directory = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         return File.createTempFile(new_name, ".3gp", sd_directory);
     }
 
